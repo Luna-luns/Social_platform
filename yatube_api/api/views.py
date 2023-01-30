@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from posts.models import Post, Comment, Group, Follow
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
@@ -12,7 +12,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [IsAuthenticated, OnlyAuthorPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly, OnlyAuthorPermission]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -22,7 +22,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     pagination_class = None
-    permission_classes = [IsAuthenticated, OnlyAuthorPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly, OnlyAuthorPermission]
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
@@ -39,6 +39,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class FollowViewSet(viewsets.ModelViewSet):
@@ -49,8 +50,8 @@ class FollowViewSet(viewsets.ModelViewSet):
     search_fields = ('following__username',)
     http_method_names = ['get', 'post']
 
-    # def get_queryset(self):
-    #     return self.request.user.follower.all()
-    #
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
+    def get_queryset(self):
+        return self.request.user.follower.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
