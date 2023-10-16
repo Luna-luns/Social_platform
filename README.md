@@ -100,5 +100,5 @@ python3 manage.py runserver
   
 ## Обратная связь
 
-Почта: liza.strunnikova@yandex.ru
+Email: liza.strunnikova@yandex.ru<br>
 Telegram: @l_lans
